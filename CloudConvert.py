@@ -39,7 +39,7 @@ class CloudConvert():
             "https://srv01.cloudconvert.org/process/{pid}"
             ).format(pid=pid)
 
-        return requests.get(url).json
+        return requests.get(url).json()
 
     def _cancel(self, pid):
         url = (
@@ -62,5 +62,6 @@ class CloudConvert():
         url = (
             "https://api.cloudconvert.org/processes?apikey={api}"
             ).format(api=apikey)
+        print url
 
-        return requests.get(url).json
+        return requests.get(url).json()
