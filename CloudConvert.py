@@ -3,7 +3,14 @@ import time
 
 
 class CloudConvert():
+    """
+    Low level interface to the CloudConvert service
+    """
+
     def __init__(self, apikey):
+        """
+        apikey(str) -> The api key from CloudConvert
+        """
         self.apikey = apikey
         self.pid = None
 
@@ -24,7 +31,7 @@ class CloudConvert():
     def _upload(self, fname, outformat, pid=None, options=None):
         if pid is None:
             pid = self.pid
-            
+
         url = (
             "https://srv01.cloudconvert.org/process/{pid}"
             ).format(pid=pid)
@@ -42,7 +49,7 @@ class CloudConvert():
     def _status(self, pid=None):
         if pid is None:
             pid = self.pid
-            
+
         url = (
             "https://srv01.cloudconvert.org/process/{pid}"
             ).format(pid=pid)
@@ -60,7 +67,7 @@ class CloudConvert():
     def _cancel(self, pid=None):
         if pid is None:
             pid = self.pid
-            
+
         url = (
             "https://srv01.cloudconvert.org/process/{pid}/cancel"
             ).format(pid=pid)
@@ -70,7 +77,7 @@ class CloudConvert():
     def _delete(self, pid=None):
         if pid is None:
             pid = self.pid
-            
+
         url = (
             "https://srv01.cloudconvert.org/process/{pid}/delete"
             ).format(pid=pid)
@@ -78,6 +85,12 @@ class CloudConvert():
         requests.get(url)
 
     def list(self, apikey=None):
+        """
+        Returns the history of the conversions of the current
+        apikey.
+
+        You can specify a different apikey.
+        """
         if apikey is None:
             apikey = self.apikey
 
@@ -88,9 +101,17 @@ class CloudConvert():
         return requests.get(url).json()
 
     def conversion_types(self, inputformat=None, outputformat=None):
+        """
+        Returns a dict with all te possible conversions and
+        conversion specific options.
+
+        Arguments:
+            inputformat(str) -> input format to lookup [optional]
+            outputformat(str) -> outpu format to lookup [optional]
+        """
         kwargs = {"inputformat": inputformat,
                   "outputformat": outputformat}
-        
+
         url = "https://api.cloudconvert.org/conversiontypes"
 
         if inputformat or outputformat:
@@ -105,12 +126,12 @@ class CloudConvert():
 class ConversionProcess(CloudConvert):
     def __init__(self, apikey):
         super().__init__(apikey)
-        
+
         self.pid = None
 
         self.fromfile = None
         self.fromformat = None
-        
+
         self.tofile = None
         self.toformat = None
 
@@ -118,6 +139,9 @@ class ConversionProcess(CloudConvert):
         return f.split(".")[-1]
 
     def init(self, fromfile, tofile):
+        """
+        Prepares the conversion
+        """
         self.fromfile = fromfile
         self.tofile = tofile
 
@@ -130,24 +154,49 @@ class ConversionProcess(CloudConvert):
         return self.pid
 
     def start(self):
+        """
+        Uploads the file hence starting the conversion process
+        """
         self._upload(self.fromfile, self.fromformat)
 
     def status(self):
+        """
+        Returns the status of the process
+        """
         # TODO: Make it more beautiful, not just raw json response
         return self._status()
 
     def cancel(self):
+        """
+        Cancels the process. Currently there is no way of resuming.
+        """
         self._cancel()
 
     def delete(self):
+        """
+        Deletes the files from the current process.
+        
+        Note: files will get automatically deleted after a fixed period of time
+            available trough status()
+        Note: if the process is alredy running, it's first cancelled
+        """
         self._delete()
 
     def wait_for_completion(self, check_interval=1):
+        """
+        This blocks until the process status["step"] changes to "finished".
+
+        Arguments:
+            check_interval(int) -> seconds to wait between each check.
+        """
         while True:
             time.sleep(check_interval)
             if self._status()["step"] == "finished":
                 break
 
     def download(self):
+        """
+        Returns a file-like object with the output file, fro download.
+        """
         # File-like object
         return self._download().raw
