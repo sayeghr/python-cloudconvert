@@ -62,6 +62,5 @@ class CloudConvert():
         url = (
             "https://api.cloudconvert.org/processes?apikey={api}"
             ).format(api=apikey)
-        print url
 
         return requests.get(url).json()
