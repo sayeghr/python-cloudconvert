@@ -54,7 +54,7 @@ class CloudConvert():
 
         url = self._status(pid)["output"]["url"]
 
-        # TODO
+        return requests.get(url, stream=True)
 
     def _cancel(self, pid=None):
         if pid is None:
@@ -76,7 +76,7 @@ class CloudConvert():
 
         requests.get(url)
 
-    def _list(self, apikey=None):
+    def list(self, apikey=None):
         if apikey is None:
             apikey = self.apikey
 
@@ -85,3 +85,17 @@ class CloudConvert():
             ).format(api=apikey)
 
         return requests.get(url).json()
+
+    def conversion_types(self, inputformat=None, outputformat=None):
+        kwargs = {"inputformat": inputformat,
+                  "outputformat": outputformat}
+        
+        url = "https://api.cloudconvert.org/conversiontypes"
+
+        if inputformat or outputformat:
+            toappend = [param+"="+kwargs[param]
+                        for param in kwargs
+                        if kwargs[param] is not None]
+            url += "?" + "&".join(toappend)
+
+        return url
