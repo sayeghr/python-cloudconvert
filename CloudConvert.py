@@ -1,4 +1,5 @@
 import requests
+import time
 
 
 class CloudConvert():
@@ -99,3 +100,54 @@ class CloudConvert():
             url += "?" + "&".join(toappend)
 
         return url
+
+
+class ConversionProcess(CloudConvert):
+    def __init__(self, apikey):
+        super().__init__(apikey)
+        
+        self.pid = None
+
+        self.fromfile = None
+        self.fromformat = None
+        
+        self.tofile = None
+        self.toformat = None
+
+    def _get_format(self, f):
+        return f.split(".")[-1]
+
+    def init(self, fromfile, tofile):
+        self.fromfile = fromfile
+        self.tofile = tofile
+
+        # If this doesn't get resolved right,
+        # user has to provide the correct ones.
+        self.fromformat = self._get_format(fromfile)
+        self.toformat = self._get_format(tofile)
+
+        self.pid = self._start(self.fromformat, self.toformat)
+        return self.pid
+
+    def start(self):
+        self._upload(self.fromfile, self.fromformat)
+
+    def status(self):
+        # TODO: Make it more beautiful, not just raw json response
+        return self._status()
+
+    def cancel(self):
+        self._cancel()
+
+    def delete(self):
+        self._delete()
+
+    def wait_for_completion(self, check_interval=1):
+        while True:
+            time.sleep(check_interval)
+            if self._status()["step"] == "finished":
+                break
+
+    def download(self):
+        # File-like object
+        return self._download().raw
