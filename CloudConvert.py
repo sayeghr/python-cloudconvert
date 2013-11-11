@@ -12,6 +12,9 @@ class CloudConvert():
 
     @staticmethod
     def _start(inputformat, outputformat, apikey):
+        """
+        Inits the process in the remote server
+        """
         url = (
             "https://api.cloudconvert.org/process?"
             "inputformat={inputf}&outputformat={outputf}&apikey={api}"
@@ -24,9 +27,11 @@ class CloudConvert():
 
     @staticmethod
     def _upload(fname, outformat, pid, host, options=None):
+        """
+        Uploads a file to be converted
+        """
         url = (
             "https://{host}/process/{pid}"
-            # TODO: http://5.135.203.46/
             ).format(pid=pid,
                      host=host)
 
@@ -43,6 +48,9 @@ class CloudConvert():
 
     @staticmethod
     def _status(pid, host):
+        """
+        Checks the conversion status of a process
+        """
         url = (
             "https://{host}/process/{pid}"
             ).format(pid=pid,
@@ -52,12 +60,19 @@ class CloudConvert():
 
     @staticmethod
     def _download(pid, host):
+        """
+        Returns a file-like object containing the file
+        """
         url = "https:" + CloudConvert._status(pid, host)["output"]["url"]
 
         return requests.get(url, verify=False, stream=True).raw
 
     @staticmethod
     def _cancel(pid, host):
+        """
+        Cancels the conversion methon ath any point.
+        Currently there is no way of resuming
+        """
         url = (
             "https://{host}/process/{pid}/cancel"
             ).format(pid=pid,
@@ -68,6 +83,9 @@ class CloudConvert():
 
     @staticmethod
     def _delete(pid, host):
+        """
+        Deletes files of a conversion process
+        """
         url = (
             "https://{host}/process/{pid}/delete"
             ).format(pid=pid,
