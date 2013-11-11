@@ -18,7 +18,7 @@ class CloudConvert():
             ).format(
             inputf=inputformat,
             outputf=outputformat,
-            api=self.apikey)
+            api=apikey)
 
         return requests.get(url).json()
 
@@ -140,7 +140,7 @@ class ConversionProcess():
         self.fromformat = self._get_format(fromfile)
         self.toformat = self._get_format(tofile)
 
-        j = CloudConvert._start(self.fromformat, self.toformat)
+        j = CloudConvert._start(self.fromformat, self.toformat, self.apikey)
         self.pid = j["id"]
         self.host = j["host"]
 
