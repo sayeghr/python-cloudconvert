@@ -8,91 +8,97 @@ class CloudConvert():
     """
 
     def __init__(self, apikey):
-        """
-        apikey(str) -> The api key from CloudConvert
-        """
-        self.apikey = apikey
-        self.pid = None
+        pass
 
-    def _start(self, inputformat, outputformat, apikey=None):
-        if apikey is None:
-            apikey = self.apikey
-
+    @staticmethod
+    def start(inputformat, outputformat, apikey):
+        """
+        Inits the process in the remote server
+        """
         url = (
             "https://api.cloudconvert.org/process?"
             "inputformat={inputf}&outputformat={outputf}&apikey={api}"
             ).format(
             inputf=inputformat,
             outputf=outputformat,
-            api=self.apikey)
+            api=apikey)
 
-        return requests.get(url).text
+        return requests.get(url).json()
 
-    def _upload(self, fname, outformat, pid=None, options=None):
-        if pid is None:
-            pid = self.pid
-
+    @staticmethod
+    def upload(fname, outformat, pid, host, options=None):
+        """
+        Uploads a file to be converted
+        """
         url = (
-            "https://srv01.cloudconvert.org/process/{pid}"
-            ).format(pid=pid)
+            "https://{host}/process/{pid}"
+            ).format(pid=pid,
+                     host=host)
 
         if options is None:
             options = {}  # TODO
 
-        with open(fname, "r") as f:
+        with open(fname, "rb") as f:
             requests.post(url,
                           data={
                               "outputformat": outformat
                               },
-                          files={"file": f})
+                          files={"file": f},
+                          verify=False)
 
-    def _status(self, pid=None):
-        if pid is None:
-            pid = self.pid
-
+    @staticmethod
+    def status(pid, host):
+        """
+        Checks the conversion status of a process
+        """
         url = (
-            "https://srv01.cloudconvert.org/process/{pid}"
-            ).format(pid=pid)
+            "https://{host}/process/{pid}"
+            ).format(pid=pid,
+                     host=host)
 
-        return requests.get(url).json()
+        return requests.get(url, verify=False).json()
 
-    def _download(self, pid=None):
-        if pid is None:
-            pid = self.pid
+    @staticmethod
+    def download(pid, host):
+        """
+        Returns a file-like object containing the file
+        """
+        url = "https:" + CloudConvert._status(pid, host)["output"]["url"]
 
-        url = self._status(pid)["output"]["url"]
+        return requests.get(url, verify=False, stream=True).raw
 
-        return requests.get(url, stream=True)
-
-    def _cancel(self, pid=None):
-        if pid is None:
-            pid = self.pid
-
+    @staticmethod
+    def cancel(pid, host):
+        """
+        Cancels the conversion methon ath any point.
+        Currently there is no way of resuming
+        """
         url = (
-            "https://srv01.cloudconvert.org/process/{pid}/cancel"
-            ).format(pid=pid)
+            "https://{host}/process/{pid}/cancel"
+            ).format(pid=pid,
+                     host=host)
+
+        requests.get(url,
+                     verify=False)
+
+    @staticmethod
+    def delete(pid, host):
+        """
+        Deletes files of a conversion process
+        """
+        url = (
+            "https://{host}/process/{pid}/delete"
+            ).format(pid=pid,
+                     host=host,
+                     verify=False)
 
         requests.get(url)
 
-    def _delete(self, pid=None):
-        if pid is None:
-            pid = self.pid
-
-        url = (
-            "https://srv01.cloudconvert.org/process/{pid}/delete"
-            ).format(pid=pid)
-
-        requests.get(url)
-
-    def list(self, apikey=None):
+    @staticmethod
+    def list(apikey):
         """
-        Returns the history of the conversions of the current
-        apikey.
-
-        You can specify a different apikey.
+        Returns the history of the conversions of the supplied apikey.
         """
-        if apikey is None:
-            apikey = self.apikey
 
         url = (
             "https://api.cloudconvert.org/processes?apikey={api}"
@@ -100,7 +106,8 @@ class CloudConvert():
 
         return requests.get(url).json()
 
-    def conversion_types(self, inputformat=None, outputformat=None):
+    @staticmethod
+    def conversion_types(inputformat=None, outputformat=None):
         """
         Returns a dict with all te possible conversions and
         conversion specific options.
@@ -120,15 +127,16 @@ class CloudConvert():
                         if kwargs[param] is not None]
             url += "?" + "&".join(toappend)
 
-        return url
+        return requests.get(url).json()
 
 
-class ConversionProcess(CloudConvert):
+class ConversionProcess():
     def __init__(self, apikey):
-        super().__init__(apikey)
+        self.apikey = apikey
 
         self.pid = None
-
+        self.host = None
+        
         self.fromfile = None
         self.fromformat = None
 
@@ -150,27 +158,30 @@ class ConversionProcess(CloudConvert):
         self.fromformat = self._get_format(fromfile)
         self.toformat = self._get_format(tofile)
 
-        self.pid = self._start(self.fromformat, self.toformat)
+        j = CloudConvert._start(self.fromformat, self.toformat, self.apikey)
+        self.pid = j["id"]
+        self.host = j["host"]
+
         return self.pid
 
     def start(self):
         """
         Uploads the file hence starting the conversion process
         """
-        self._upload(self.fromfile, self.fromformat)
+        CloudConvert._upload(self.fromfile, self.fromformat, self.pid, self.host)
 
     def status(self):
         """
         Returns the status of the process
         """
         # TODO: Make it more beautiful, not just raw json response
-        return self._status()
+        return CloudConvert._status(self.pid, self.host)
 
     def cancel(self):
         """
         Cancels the process. Currently there is no way of resuming.
         """
-        self._cancel()
+        CloudConvert._cancel(self.pid, self.host)
 
     def delete(self):
         """
@@ -180,7 +191,7 @@ class ConversionProcess(CloudConvert):
             available trough status()
         Note: if the process is alredy running, it's first cancelled
         """
-        self._delete()
+        CloudConvert._delete(self.pid, self.host)
 
     def wait_for_completion(self, check_interval=1):
         """
@@ -191,7 +202,7 @@ class ConversionProcess(CloudConvert):
         """
         while True:
             time.sleep(check_interval)
-            if self._status()["step"] == "finished":
+            if CloudConvert._status(self.pid, self.host)["step"] == "finished":
                 break
 
     def download(self):
@@ -199,4 +210,4 @@ class ConversionProcess(CloudConvert):
         Returns a file-like object with the output file, fro download.
         """
         # File-like object
-        return self._download().raw
+        return CloudConvert._download(self.pid, self.host)
