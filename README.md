@@ -10,6 +10,30 @@ __Currently the API is a mirror from the CloudConvert service, AKA just exposes 
 - python2.7 or python3 (_Should_ work in both)
 - requests
 
+### Example
+
+    import CloudConvert
+    
+    apikey = "yourapikey"
+    
+    process = CloudConvert.ConversionProcess(apikey)
+    
+    # This should autodetect file extension. if not, you can
+    # always set process.fromformat and .toformat to the correct
+    # values
+    process.init("/path/to/file.mp4", "path/to/output.m4v")
+    
+    # Will block until file is done processing. You can set
+    # the interval between checks.
+    process.wait_for_completion(interval=5)
+    
+    # Returns a file-like obj to download the processed file
+    download = process.download()
+    
+    with open("output.m4v", "wb") as f:  # Important to set mode to wb
+        f.write(download.read())
+    
+
 
 ### Documentation
 
