@@ -11,7 +11,7 @@ class CloudConvert():
         pass
 
     @staticmethod
-    def _start(inputformat, outputformat, apikey):
+    def start(inputformat, outputformat, apikey):
         """
         Inits the process in the remote server
         """
@@ -26,7 +26,7 @@ class CloudConvert():
         return requests.get(url).json()
 
     @staticmethod
-    def _upload(fname, outformat, pid, host, options=None):
+    def upload(fname, outformat, pid, host, options=None):
         """
         Uploads a file to be converted
         """
@@ -47,7 +47,7 @@ class CloudConvert():
                           verify=False)
 
     @staticmethod
-    def _status(pid, host):
+    def status(pid, host):
         """
         Checks the conversion status of a process
         """
@@ -59,7 +59,7 @@ class CloudConvert():
         return requests.get(url, verify=False).json()
 
     @staticmethod
-    def _download(pid, host):
+    def download(pid, host):
         """
         Returns a file-like object containing the file
         """
@@ -68,7 +68,7 @@ class CloudConvert():
         return requests.get(url, verify=False, stream=True).raw
 
     @staticmethod
-    def _cancel(pid, host):
+    def cancel(pid, host):
         """
         Cancels the conversion methon ath any point.
         Currently there is no way of resuming
@@ -82,7 +82,7 @@ class CloudConvert():
                      verify=False)
 
     @staticmethod
-    def _delete(pid, host):
+    def delete(pid, host):
         """
         Deletes files of a conversion process
         """
