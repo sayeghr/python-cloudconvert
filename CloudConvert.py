@@ -158,7 +158,7 @@ class ConversionProcess():
         self.fromformat = self._get_format(fromfile)
         self.toformat = self._get_format(tofile)
 
-        j = CloudConvert._start(self.fromformat, self.toformat, self.apikey)
+        j = CloudConvert.start(self.fromformat, self.toformat, self.apikey)
         self.pid = j["id"]
         self.host = j["host"]
 
@@ -168,7 +168,7 @@ class ConversionProcess():
         """
         Uploads the file hence starting the conversion process
         """
-        CloudConvert._upload(self.fromfile, self.fromformat, self.pid, self.host)
+        CloudConvert.upload(self.fromfile, self.fromformat, self.pid, self.host)
 
     def status(self):
         """
@@ -181,7 +181,7 @@ class ConversionProcess():
         """
         Cancels the process. Currently there is no way of resuming.
         """
-        CloudConvert._cancel(self.pid, self.host)
+        CloudConvert.cancel(self.pid, self.host)
 
     def delete(self):
         """
@@ -191,7 +191,7 @@ class ConversionProcess():
             available trough status()
         Note: if the process is alredy running, it's first cancelled
         """
-        CloudConvert._delete(self.pid, self.host)
+        CloudConvert.delete(self.pid, self.host)
 
     def wait_for_completion(self, check_interval=1):
         """
@@ -204,7 +204,7 @@ class ConversionProcess():
         while True:
             time.sleep(check_interval)
 
-            step = CloudConvert._status(self.pid, self.host)["step"]
+            step = CloudConvert.status(self.pid, self.host)["step"]
             if step == "finished":
                 return True
             elif step == "error":
@@ -215,4 +215,4 @@ class ConversionProcess():
         Returns a file-like object with the output file, fro download.
         """
         # File-like object
-        return CloudConvert._download(self.pid, self.host)
+        return CloudConvert.download(self.pid, self.host)
