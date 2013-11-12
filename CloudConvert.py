@@ -195,15 +195,20 @@ class ConversionProcess():
 
     def wait_for_completion(self, check_interval=1):
         """
-        This blocks until the process status["step"] changes to "finished".
+        This blocks until the process status["step"] changes to "finished"
+        when returns True or "error", in which case, returns False.
 
         Arguments:
             check_interval(int) -> seconds to wait between each check.
         """
         while True:
             time.sleep(check_interval)
-            if CloudConvert._status(self.pid, self.host)["step"] == "finished":
-                break
+
+            step = CloudConvert._status(self.pid, self.host)["step"]
+            if step == "finished":
+                return True
+            elif step == "error":
+                return False
 
     def download(self):
         """
