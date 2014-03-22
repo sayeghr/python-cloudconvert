@@ -3,6 +3,7 @@ import time
 
 
 class CloudConvert():
+
     """
     Low level interface to the CloudConvert service
     """
@@ -18,7 +19,7 @@ class CloudConvert():
         url = (
             "https://api.cloudconvert.org/process?"
             "inputformat={inputf}&outputformat={outputf}&apikey={api}"
-            ).format(
+        ).format(
             inputf=inputformat,
             outputf=outputformat,
             api=apikey)
@@ -32,8 +33,8 @@ class CloudConvert():
         """
         url = (
             "https://{host}/process/{pid}"
-            ).format(pid=pid,
-                     host=host)
+        ).format(pid=pid,
+                 host=host)
 
         if options is None:
             options = {}  # TODO
@@ -42,7 +43,7 @@ class CloudConvert():
             requests.post(url,
                           data={
                               "outputformat": outformat
-                              },
+                          },
                           files={"file": f},
                           verify=False)
 
@@ -53,8 +54,8 @@ class CloudConvert():
         """
         url = (
             "https://{host}/process/{pid}"
-            ).format(pid=pid,
-                     host=host)
+        ).format(pid=pid,
+                 host=host)
 
         return requests.get(url, verify=False).json()
 
@@ -75,8 +76,8 @@ class CloudConvert():
         """
         url = (
             "https://{host}/process/{pid}/cancel"
-            ).format(pid=pid,
-                     host=host)
+        ).format(pid=pid,
+                 host=host)
 
         requests.get(url,
                      verify=False)
@@ -88,9 +89,9 @@ class CloudConvert():
         """
         url = (
             "https://{host}/process/{pid}/delete"
-            ).format(pid=pid,
-                     host=host,
-                     verify=False)
+        ).format(pid=pid,
+                 host=host,
+                 verify=False)
 
         requests.get(url)
 
@@ -102,7 +103,7 @@ class CloudConvert():
 
         url = (
             "https://api.cloudconvert.org/processes?apikey={api}"
-            ).format(api=apikey)
+        ).format(api=apikey)
 
         return requests.get(url).json()
 
@@ -122,7 +123,7 @@ class CloudConvert():
         url = "https://api.cloudconvert.org/conversiontypes"
 
         if inputformat or outputformat:
-            toappend = [param+"="+kwargs[param]
+            toappend = [param + "=" + kwargs[param]
                         for param in kwargs
                         if kwargs[param] is not None]
             url += "?" + "&".join(toappend)
@@ -131,12 +132,13 @@ class CloudConvert():
 
 
 class ConversionProcess():
+
     def __init__(self, apikey):
         self.apikey = apikey
 
         self.pid = None
         self.host = None
-        
+
         self.fromfile = None
         self.fromformat = None
 
@@ -168,7 +170,8 @@ class ConversionProcess():
         """
         Uploads the file hence starting the conversion process
         """
-        CloudConvert.upload(self.fromfile, self.fromformat, self.pid, self.host)
+        CloudConvert.upload(
+            self.fromfile, self.fromformat, self.pid, self.host)
 
     def status(self):
         """
@@ -186,7 +189,7 @@ class ConversionProcess():
     def delete(self):
         """
         Deletes the files from the current process.
-        
+
         Note: files will get automatically deleted after a fixed period of time
             available trough status()
         Note: if the process is alredy running, it's first cancelled
