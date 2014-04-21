@@ -22,7 +22,7 @@ Python API for the CloudConvert.org service
     
     # Will block until file is done processing. You can set
     # the interval between checks.
-    process.wait_for_completion(interval=5)
+    process.wait_for_completion(check_interval=5)
     
     # Returns a file-like obj to download the processed file
     download = process.download()
