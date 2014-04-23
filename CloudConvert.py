@@ -215,7 +215,16 @@ class ConversionProcess():
 
     def download(self):
         """
-        Returns a file-like object with the output file, fro download.
+        Returns a file-like object with the output file, for download.
         """
         # File-like object
         return CloudConvert.download(self.pid, self.host)
+
+    def save(self):
+        """
+        Saves the output with the designated filename and extension
+        """
+        download = self.download()
+
+        with open(self.tofile, "wb") as f:  # Important to set mode to wb
+            f.write(download.read())
