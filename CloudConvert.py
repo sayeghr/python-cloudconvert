@@ -216,7 +216,7 @@ class ConversionProcess():
 
             status = CloudConvert.status(self.pid, self.host)
 
-            if status["error"]:
+            if status.get("error", False):
                 raise ConversionProcessException(status["error"])
 
             step = status["step"]
