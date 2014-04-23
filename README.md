@@ -19,6 +19,8 @@ Python API for the CloudConvert.org service
     # always set process.fromformat and .toformat to the correct
     # values
     process.init("/path/to/file.mp4", "path/to/output.m4v")
+
+    process.start()
     
     # Will block until file is done processing. You can set
     # the interval between checks.

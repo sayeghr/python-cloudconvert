@@ -64,7 +64,7 @@ class CloudConvert():
         """
         Returns a file-like object containing the file
         """
-        url = "https:" + CloudConvert._status(pid, host)["output"]["url"]
+        url = "https:" + CloudConvert.status(pid, host)["output"]["url"]
 
         return requests.get(url, verify=False, stream=True).raw
 
@@ -178,7 +178,7 @@ class ConversionProcess():
         Returns the status of the process
         """
         # TODO: Make it more beautiful, not just raw json response
-        return CloudConvert._status(self.pid, self.host)
+        return CloudConvert.status(self.pid, self.host)
 
     def cancel(self):
         """
