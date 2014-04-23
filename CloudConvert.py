@@ -131,6 +131,10 @@ class CloudConvert():
         return requests.get(url).json()
 
 
+class ConversionProcessException(Exception):
+    pass
+
+
 class ConversionProcess():
 
     def __init__(self, apikey):
@@ -201,13 +205,21 @@ class ConversionProcess():
         This blocks until the process status["step"] changes to "finished"
         when returns True or "error", in which case, returns False.
 
+        If there is an error other than the conversion failing,
+        it will raise 'ConversionProcessException'
+
         Arguments:
             check_interval(int) -> seconds to wait between each check.
         """
         while True:
             time.sleep(check_interval)
 
-            step = CloudConvert.status(self.pid, self.host)["step"]
+            status = CloudConvert.status(self.pid, self.host)
+
+            if status["error"]:
+                raise ConversionProcessException(status["error"])
+
+            step = status["step"]
             if step == "finished":
                 return True
             elif step == "error":

@@ -38,13 +38,15 @@ Python API for the CloudConvert.org service
 
 Help on module CloudConvert:
 
-    NAME
+NAME
+    CloudConvert
+
+CLASSES
+    builtins.Exception(builtins.BaseException)
+        ConversionProcessException
+    builtins.object
         CloudConvert
-    
-    CLASSES
-        builtins.object
-            CloudConvert
-                ConversionProcess
+        ConversionProcess
 
     class CloudConvert(builtins.object)
      |  Low level interface to the CloudConvert service
@@ -86,14 +88,6 @@ Help on module CloudConvert:
      |  upload(fname, outformat, pid, host, options=None)
      |      Uploads a file to be converted
      |
-     |  ----------------------------------------------------------------------
-     |  Data descriptors defined here:
-     |
-     |  __dict__
-     |      dictionary for instance variables (if defined)
-     |
-     |  __weakref__
-     |      list of weak references to the object (if defined)
 
     class ConversionProcess(builtins.object)
      |  Methods defined here:
@@ -111,10 +105,13 @@ Help on module CloudConvert:
      |      Note: if the process is alredy running, it's first cancelled
      |
      |  download(self)
-     |      Returns a file-like object with the output file, fro download.
+     |      Returns a file-like object with the output file, for download.
      |
      |  init(self, fromfile, tofile)
      |      Prepares the conversion
+     |
+     |  save(self)
+     |      Saves the output with the designated filename and extension
      |
      |  start(self)
      |      Uploads the file hence starting the conversion process
@@ -123,16 +120,12 @@ Help on module CloudConvert:
      |      Returns the status of the process
      |
      |  wait_for_completion(self, check_interval=1)
-     |      This blocks until the process status["step"] changes to "finished".
+     |      This blocks until the process status["step"] changes to "finished"
+     |      when returns True or "error", in which case, returns False.
+     |
+     |      If there is an error other than the conversion failing,
+     |      it will raise 'ConversionProcessException'
      |
      |      Arguments:
      |          check_interval(int) -> seconds to wait between each check.
      |
-     |  ----------------------------------------------------------------------
-     |  Data descriptors defined here:
-     |
-     |  __dict__
-     |      dictionary for instance variables (if defined)
-     |
-     |  __weakref__
-     |      list of weak references to the object (if defined)
