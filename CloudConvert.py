@@ -28,21 +28,16 @@ class CloudConvert():
         return requests.get(url).json()
 
     @staticmethod
-    def upload(fname, outformat, pid, host, options=None):
+    def upload(fname, outformat, process_url, options=None):
         """
         Uploads a file to be converted
         """
-
-        url = (
-            "https://{host}/process/{pid}"
-        ).format(pid=pid,
-                 host=host)
 
         if options is None:
             options = {}  # TODO
 
         with open(fname, "rb") as f:
-            requests.post(url,
+            requests.post(process_url,
                           data={
                               "outputformat": outformat
                           },
@@ -50,54 +45,46 @@ class CloudConvert():
                           verify=False)
 
     @staticmethod
-    def status(pid, host):
+    def status(process_url):
         """
         Checks the conversion status of a process
         """
 
-        url = (
-            "https://{host}/process/{pid}"
-        ).format(pid=pid,
-                 host=host)
-
-        return requests.get(url, verify=False).json()
+        return requests.get(process_url, verify=False).json()
 
     @staticmethod
-    def download(pid, host):
+    def download(process_url):
         """
         Returns a file-like object containing the file
         """
 
-        url = "https:" + CloudConvert.status(pid, host)["output"]["url"]
+        url = "https:" + CloudConvert.status(process_url)["output"]["url"]
 
         return requests.get(url, verify=False, stream=True).raw
 
     @staticmethod
-    def cancel(pid, host):
+    def cancel(process_url):
         """
         Cancels the conversion methon at any point.
         Currently there is no way of resuming
         """
 
         url = (
-            "https://{host}/process/{pid}/cancel"
-        ).format(pid=pid,
-                 host=host)
+            "{purl}/cancel"
+        ).format(purl=process_url)
 
         requests.get(url,
                      verify=False)
 
     @staticmethod
-    def delete(pid, host):
+    def delete(process_url):
         """
         Deletes files of a conversion process
         """
 
         url = (
-            "https://{host}/process/{pid}/delete"
-        ).format(pid=pid,
-                 host=host,
-                 verify=False)
+            "{purl}/delete"
+        ).format(purl=process_url)
 
         requests.get(url)
 
@@ -147,8 +134,7 @@ class ConversionProcess():
     def __init__(self, apikey):
         self.apikey = apikey
 
-        self.pid = None
-        self.host = None
+        self.url = None
 
         self.fromfile = None
         self.fromformat = None
@@ -173,10 +159,9 @@ class ConversionProcess():
         self.toformat = self._get_format(tofile)
 
         j = CloudConvert.start(self.fromformat, self.toformat, self.apikey)
-        self.pid = j["id"]
-        self.host = j["host"]
+        self.url = "https:" + j["url"]
 
-        return self.pid
+        return j["id"]  # pid
 
     def is_possible(self):
         """
@@ -201,7 +186,7 @@ class ConversionProcess():
         """
 
         CloudConvert.upload(
-            self.fromfile, self.fromformat, self.pid, self.host)
+            self.fromfile, self.fromformat, self.url)
 
     def status(self):
         """
@@ -209,14 +194,14 @@ class ConversionProcess():
         """
 
         # TODO: Make it more beautiful, not just raw json response
-        return CloudConvert.status(self.pid, self.host)
+        return CloudConvert.status(self.url)
 
     def cancel(self):
         """
         Cancels the process. Currently there is no way of resuming.
         """
 
-        CloudConvert.cancel(self.pid, self.host)
+        CloudConvert.cancel(self.url)
 
     def delete(self):
         """
@@ -227,7 +212,7 @@ class ConversionProcess():
         Note: if the process is alredy running, it's first cancelled
         """
 
-        CloudConvert.delete(self.pid, self.host)
+        CloudConvert.delete(self.url)
 
     def wait_for_completion(self, check_interval=1):
         """
@@ -244,7 +229,7 @@ class ConversionProcess():
         while True:
             time.sleep(check_interval)
 
-            status = CloudConvert.status(self.pid, self.host)
+            status = self.status()
 
             if status.get("error", False):
                 raise ConversionProcessException(status["error"])
@@ -261,7 +246,7 @@ class ConversionProcess():
         """
 
         # File-like object
-        return CloudConvert.download(self.pid, self.host)
+        return CloudConvert.download(self.url)
 
     def save(self):
         """
