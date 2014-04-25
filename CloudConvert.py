@@ -170,6 +170,19 @@ class ConversionProcess():
 
         return self.pid
 
+    def is_possible(self):
+        #TODO documentation
+        if self.fromformat is None or self.toformat is None:
+            return False
+
+        else:
+            return bool(
+                CloudConvert.conversion_types(
+                    inputformat=self.fromformat,
+                    outputformat=self.toformat
+                    )
+                )
+
     def start(self):
         """
         Uploads the file hence starting the conversion process
