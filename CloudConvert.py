@@ -16,6 +16,7 @@ class CloudConvert():
         """
         Inits the process in the remote server
         """
+
         url = (
             "https://api.cloudconvert.org/process?"
             "inputformat={inputf}&outputformat={outputf}&apikey={api}"
@@ -31,6 +32,7 @@ class CloudConvert():
         """
         Uploads a file to be converted
         """
+
         url = (
             "https://{host}/process/{pid}"
         ).format(pid=pid,
@@ -52,6 +54,7 @@ class CloudConvert():
         """
         Checks the conversion status of a process
         """
+
         url = (
             "https://{host}/process/{pid}"
         ).format(pid=pid,
@@ -64,6 +67,7 @@ class CloudConvert():
         """
         Returns a file-like object containing the file
         """
+
         url = "https:" + CloudConvert.status(pid, host)["output"]["url"]
 
         return requests.get(url, verify=False, stream=True).raw
@@ -71,9 +75,10 @@ class CloudConvert():
     @staticmethod
     def cancel(pid, host):
         """
-        Cancels the conversion methon ath any point.
+        Cancels the conversion methon at any point.
         Currently there is no way of resuming
         """
+
         url = (
             "https://{host}/process/{pid}/cancel"
         ).format(pid=pid,
@@ -87,6 +92,7 @@ class CloudConvert():
         """
         Deletes files of a conversion process
         """
+
         url = (
             "https://{host}/process/{pid}/delete"
         ).format(pid=pid,
@@ -98,7 +104,7 @@ class CloudConvert():
     @staticmethod
     def list(apikey):
         """
-        Returns the history of the conversions of the supplied apikey.
+        Returns the conversion history of the supplied apikey.
         """
 
         url = (
@@ -117,6 +123,7 @@ class CloudConvert():
             inputformat(str) -> input format to lookup [optional]
             outputformat(str) -> outpu format to lookup [optional]
         """
+
         kwargs = {"inputformat": inputformat,
                   "outputformat": outputformat}
 
@@ -156,6 +163,7 @@ class ConversionProcess():
         """
         Prepares the conversion
         """
+
         self.fromfile = fromfile
         self.tofile = tofile
 
@@ -171,7 +179,11 @@ class ConversionProcess():
         return self.pid
 
     def is_possible(self):
-        #TODO documentation
+        """
+        Checks if there is a conversion type between the two formats.
+        Returns boolean.
+        """
+
         if self.fromformat is None or self.toformat is None:
             return False
 
@@ -187,6 +199,7 @@ class ConversionProcess():
         """
         Uploads the file hence starting the conversion process
         """
+
         CloudConvert.upload(
             self.fromfile, self.fromformat, self.pid, self.host)
 
@@ -194,6 +207,7 @@ class ConversionProcess():
         """
         Returns the status of the process
         """
+
         # TODO: Make it more beautiful, not just raw json response
         return CloudConvert.status(self.pid, self.host)
 
@@ -201,6 +215,7 @@ class ConversionProcess():
         """
         Cancels the process. Currently there is no way of resuming.
         """
+
         CloudConvert.cancel(self.pid, self.host)
 
     def delete(self):
@@ -211,6 +226,7 @@ class ConversionProcess():
             available trough status()
         Note: if the process is alredy running, it's first cancelled
         """
+
         CloudConvert.delete(self.pid, self.host)
 
     def wait_for_completion(self, check_interval=1):
@@ -224,6 +240,7 @@ class ConversionProcess():
         Arguments:
             check_interval(int) -> seconds to wait between each check.
         """
+
         while True:
             time.sleep(check_interval)
 
@@ -242,6 +259,7 @@ class ConversionProcess():
         """
         Returns a file-like object with the output file, for download.
         """
+
         # File-like object
         return CloudConvert.download(self.pid, self.host)
 
@@ -249,6 +267,7 @@ class ConversionProcess():
         """
         Saves the output with the designated filename and extension
         """
+
         download = self.download()
 
         with open(self.tofile, "wb") as f:  # Important to set mode to wb
