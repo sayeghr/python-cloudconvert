@@ -20,6 +20,7 @@ Python API for the CloudConvert.org service
     # values
     process.init("/path/to/file.mp4", "path/to/output.m4v")
 
+    # This step uploads the file and starts the conversion
     process.start()
     
     # Will block until file is done processing. You can set
