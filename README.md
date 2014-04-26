@@ -40,11 +40,6 @@ Python API for the CloudConvert.org service
     class CloudConvert(builtins.object)
      |  Low level interface to the CloudConvert service
      |
-     |  Methods defined here:
-     |
-     |  __init__(self, apikey)
-     |
-     |  ----------------------------------------------------------------------
      |  Static methods defined here:
      |
      |  cancel(process_url)

@@ -8,9 +8,6 @@ class CloudConvert():
     Low level interface to the CloudConvert service
     """
 
-    def __init__(self, apikey):
-        pass
-
     @staticmethod
     def start(inputformat, outputformat, apikey):
         """
@@ -41,8 +38,7 @@ class CloudConvert():
                           data={
                               "outputformat": outformat
                           },
-                          files={"file": f},
-                          verify=False)
+                          files={"file": f})
 
     @staticmethod
     def status(process_url):
@@ -50,7 +46,7 @@ class CloudConvert():
         Checks the conversion status of a process
         """
 
-        return requests.get(process_url, verify=False).json()
+        return requests.get(process_url).json()
 
     @staticmethod
     def download(process_url):
@@ -60,7 +56,7 @@ class CloudConvert():
 
         url = "https:" + CloudConvert.status(process_url)["output"]["url"]
 
-        return requests.get(url, verify=False, stream=True).raw
+        return requests.get(url, stream=True).raw
 
     @staticmethod
     def cancel(process_url):
@@ -73,8 +69,7 @@ class CloudConvert():
             "{purl}/cancel"
         ).format(purl=process_url)
 
-        requests.get(url,
-                     verify=False)
+        requests.get(url)
 
     @staticmethod
     def delete(process_url):
@@ -177,8 +172,8 @@ class ConversionProcess():
                 CloudConvert.conversion_types(
                     inputformat=self.fromformat,
                     outputformat=self.toformat
-                    )
                 )
+            )
 
     def start(self):
         """
