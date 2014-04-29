@@ -140,7 +140,7 @@ class ConversionProcess():
     def _get_format(self, f):
         return f.split(".")[-1]
 
-    def init(self, fromfile, tofile):
+    def init(self, fromfile, tofile, fromformat=None, toformat=None):
         """
         Prepares the conversion
         """
@@ -150,10 +150,12 @@ class ConversionProcess():
 
         # If this doesn't get resolved right,
         # user has to provide the correct ones.
-        self.fromformat = self._get_format(fromfile)
-        self.toformat = self._get_format(tofile)
-
+        self.fromformat = self._get_format(fromfile) if fromformat is None else fromformat
+        self.toformat = self._get_format(tofile) if toformat is None else toformat
+        
         j = CloudConvert.start(self.fromformat, self.toformat, self.apikey)
+        if 'error' in j:
+            raise ConversionProcessException(j["error"])
         self.url = "https:" + j["url"]
 
         return j["id"]  # pid
