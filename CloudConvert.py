@@ -34,11 +34,14 @@ class CloudConvert():
             options = {}  # TODO
 
         with open(fname, "rb") as f:
-            requests.post(process_url,
-                          data={
-                              "outputformat": outformat
-                          },
-                          files={"file": f})
+            requests.post(
+                process_url,
+                data={
+                    "input": "upload",
+                    "outputformat": outformat
+                },
+                files={"file": f}
+            )
 
     @staticmethod
     def status(process_url):
@@ -119,6 +122,24 @@ class CloudConvert():
 
         return requests.get(url).json()
 
+    @staticmethod
+    def is_possible(fromformat, toformat):
+        """
+        Checks if there is a conversion type between the two formats.
+        Returns boolean.
+        """
+
+        if fromformat is None or toformat is None:
+            return False
+
+        else:
+            return bool(
+                CloudConvert.conversion_types(
+                    inputformat=fromformat,
+                    outputformat=toformat
+                )
+            )
+
 
 class ConversionProcessException(Exception):
     pass
@@ -150,9 +171,15 @@ class ConversionProcess():
 
         # If this doesn't get resolved right,
         # user has to provide the correct ones.
-        self.fromformat = self._get_format(fromfile) if fromformat is None else fromformat
-        self.toformat = self._get_format(tofile) if toformat is None else toformat
-        
+        if not fromformat:
+            self.fromformat = self._get_format(fromfile)
+        else:
+            self.fromformat = fromformat
+        if not toformat:
+            self.toformat = self._get_format(tofile)
+        else:
+            self.toformat = toformat
+
         j = CloudConvert.start(self.fromformat, self.toformat, self.apikey)
         if 'error' in j:
             raise ConversionProcessException(j["error"])
@@ -160,30 +187,12 @@ class ConversionProcess():
 
         return j["id"]  # pid
 
-    def is_possible(self):
-        """
-        Checks if there is a conversion type between the two formats.
-        Returns boolean.
-        """
-
-        if self.fromformat is None or self.toformat is None:
-            return False
-
-        else:
-            return bool(
-                CloudConvert.conversion_types(
-                    inputformat=self.fromformat,
-                    outputformat=self.toformat
-                )
-            )
-
     def start(self):
         """
         Uploads the file hence starting the conversion process
         """
 
-        CloudConvert.upload(
-            self.fromfile, self.fromformat, self.url)
+        CloudConvert.upload(self.fromfile, self.toformat, self.url)
 
     def status(self):
         """
