@@ -15,7 +15,7 @@ class CloudConvert():
         """
 
         url = (
-            "https://api.cloudconvert.org/process?"
+            "https://api.cloudconvert.com/process?"
             "inputformat={inputf}&outputformat={outputf}&apikey={api}"
         ).format(
             inputf=inputformat,
@@ -93,7 +93,7 @@ class CloudConvert():
         """
 
         url = (
-            "https://api.cloudconvert.org/processes?apikey={api}"
+            "https://api.cloudconvert.com/processes?apikey={api}"
         ).format(api=apikey)
 
         return requests.get(url).json()
@@ -112,7 +112,7 @@ class CloudConvert():
         kwargs = {"inputformat": inputformat,
                   "outputformat": outputformat}
 
-        url = "https://api.cloudconvert.org/conversiontypes"
+        url = "https://api.cloudconvert.com/conversiontypes"
 
         if inputformat or outputformat:
             toappend = [param + "=" + kwargs[param]
