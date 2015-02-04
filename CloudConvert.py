@@ -25,21 +25,23 @@ class CloudConvert():
         return requests.get(url).json()
 
     @staticmethod
-    def upload(fname, outformat, process_url, options=None):
+    def upload(fname, outformat, process_url, options={}):
         """
         Uploads a file to be converted
         """
 
-        if options is None:
-            options = {}  # TODO
+        data = {
+            "input": "upload",
+            "outputformat": outformat,
+        }
+
+        for k,v in options.iteritems():
+            data[k] = v
 
         with open(fname, "rb") as f:
             requests.post(
                 process_url,
-                data={
-                    "input": "upload",
-                    "outputformat": outformat
-                },
+                data=data,
                 files={"file": f}
             )
 
@@ -158,10 +160,12 @@ class ConversionProcess():
         self.tofile = None
         self.toformat = None
 
+        self.options = {}
+
     def _get_format(self, f):
         return f.split(".")[-1]
 
-    def init(self, fromfile, tofile, fromformat=None, toformat=None):
+    def init(self, fromfile, tofile, fromformat=None, toformat=None, options={}):
         """
         Prepares the conversion
         """
@@ -179,6 +183,8 @@ class ConversionProcess():
             self.toformat = self._get_format(tofile)
         else:
             self.toformat = toformat
+        if options:
+            self.options = options
 
         j = CloudConvert.start(self.fromformat, self.toformat, self.apikey)
         if 'error' in j:
@@ -187,12 +193,12 @@ class ConversionProcess():
 
         return j["id"]  # pid
 
-    def start(self):
+    def start(self, options={}):
         """
         Uploads the file hence starting the conversion process
         """
 
-        CloudConvert.upload(self.fromfile, self.toformat, self.url)
+        CloudConvert.upload(self.fromfile, self.toformat, self.url, self.options)
 
     def status(self):
         """
